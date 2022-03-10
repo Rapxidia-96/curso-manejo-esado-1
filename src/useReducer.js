@@ -1,140 +1,147 @@
+import React from 'react';
 
-import React from "react";
+const SECURITY_CODE = 'paradigma';
 
+function UseReducer({ name }) {
+  const [state, dispatch] = React.useReducer(reducer, initialState);
 
-const SEGURITY_CODE = 'paradigma';
-function UseReducer({name}) {
-    const [state, dispatch] = React.useReducer(reducer, initialState);
+  React.useEffect(() => {
+    console.log("Empezando el efecto")
 
-    React.useEffect(()=>{
-        console.log("Empezando efecto");
-        if (!!state.loading) {
-            setTimeout(()=>{
-                console.log("Validando");
-
-                if(state.value === SEGURITY_CODE){
-                   dispatch({type: 'CONFIRM'})
-                }else{
-                    dispatch({Type: 'ERROR'})
-                }
-                console.log("Terminado validacion"); 
-            },3000);
+    if (!!state.loading) {
+      setTimeout(() => {
+        console.log("Haciendo la validación")
+  
+        if (state.value === SECURITY_CODE) {
+          dispatch({ type: 'CONFIRM' });
+        } else {
+          dispatch({ type: 'ERROR' });
         }
-        console.log("Termino el efecto"); 
-    }, [state.loading]);
+        
+        console.log("terminando la validación")
+      }, 3000);
+    }
+    
+    console.log("Terminando el efecto")
+  }, [state.loading]);
+  
+  if (!state.deleted && !state.confirmed) {
+    return (
+      <div>
+        <h2>Eliminar {name}</h2>
+        
+        <p>Por favor, escribe el código de seguridad.</p>
+  
+        {(state.error && !state.loading) && (
+          <p>Error: el código es incorrecto</p>
+        )}
+        {state.loading && (
+          <p>Cargando...</p>
+        )}
+  
+        <input
+          placeholder="Código de seguridad"
+          value={state.value}
+          onChange={(event) => {
+            dispatch({ type: 'WRITE', payload: event.target.value });
+            // onWrite(event.target.value);
+          }}
+        />
+        <button
+          onClick={() => {
+            dispatch({ type: 'CHECK' });
+            // onCheck();
+          }}
+        >Comprobar</button>
+      </div>
+    );
+  } else if (!!state.confirmed && !state.deleted) {
+    return (
+      <React.Fragment>
+        <p>Pedimos confirmación. ¿Tas segurx?</p>
 
-   if (!state.deleted && !state.confirmed) {
-       return(
-        <div>
-            <h1>Eliminar {name}</h1>
-            <p>Por favor, escriba el código de seguridad.</p>
-            {state.error && (
-                <p>Error: codigo error</p>
-            )}
-            {state.loading && (
-                
-                <p>Espere...</p>
-            )}
-            <input
-                placeholder="Codigo de seguridad"
-                value={state.value}
-                onChange={(event)=>{
-                    // console.log(event.target.value)
-                    dispatch({Type: 'WRITE', payload: event.target.value})
-                }} 
-            />
-            <button
-                onClick={() => {
-                    dispatch({Type: 'CHECK'})
-                }}
-            >Comprobar</button>
-        </div>
-       );
-   }else if(!!state.confirmed && !state.deleted){
-        return(
-            <React.Fragment>
-                <h2>Eliminar</h2>
-                <p>Estas seguro que quieres eliminar?</p>
-                <button
-                    onClick={()=>{
-                        dispatch({Type: 'DELETE'})
-                    }}
-                >Si, eliminar</button>
-                <button
-                    onClick={()=>{
-                        dispatch({Type: 'RESET'})
-                    }}
-                >No, volver</button>
-            </React.Fragment>
-        );
-   } else {
-        return(
-            <React.Fragment>
-                <p>Eliminado con exito</p>
-                <button
-                    onClick={()=>{
-                        dispatch({Type: 'RESET'})
-                    }}
-                >Eliminado con exito</button>
-            </React.Fragment>
-        ); 
-   }
+        <button
+          onClick={() => {
+            dispatch({ type: 'DELETE' });
+            // onDelete();
+          }}
+        >
+          Sí, eliminar
+        </button>
+        <button
+          onClick={() => {
+            dispatch({ type: 'RESET' });
+            // onReset();
+          }}
+        >
+          Nop, me arrepentí
+        </button>
+      </React.Fragment>
+    );
+  } else {
+    return (
+      <React.Fragment>
+        <p>Eliminado con éxito</p>
+
+        <button
+          onClick={() => {
+            dispatch({ type: 'RESET' });
+            // onReset();
+          }}
+        >
+          Resetear, volver atrás
+        </button>
+      </React.Fragment>
+    );
+  }
 }
 
-
-const initialState ={
-    value: '',
-    error: false,
-    loading: false,
-
-    deleted: false,
-    confirmed: false,
+const initialState = {
+  value: 'paradigma',
+  error: false,
+  loading: false,
+  deleted: false,
+  confirmed: false,
 };
 
-const reducerObject = (state, payload) => (
-    console.log(payload),
-    {
-    'CONFIRM':{
-        ...state,
-        error:false,
-        loading: false,
-        confirmed: true
+const reducerObject = (state, payload) => ({
+  'CONFIRM': {
+    ...state,
+    error: false,
+    loading: false,
+    confirmed: true,
+  },
+  'ERROR': {
+    ...state,
+    error: true,
+    loading: false,
+  },
+  'WRITE': {
+    ...state,
+    value: payload
+  },
+  'CHECK': {
+    ...state,
+    loading: true,
+  },
+  'DELETE': {
+    ...state,
+    deleted: true,
+  },
+  'RESET': {
+    ...state,
+    confirmed: false,
+    deleted: false,
+    value: '',
+  },
+});
 
-    },
-    'WRITE':{
-        ...state,
-        value: payload,
-    },
-    'DELETE':{
-        ...state,
-        deleted: true,
-    },
-    
-    'ERROR': {
-        ...state,
-        error: true,
-        loading: false,
-    },
-    'CHECK': {
-        ...state,
-        error: false,
-        loading: false,
-        confirmed: true,
-    },
-    'RESET':{
-        ...state,
-        confirmed: false,
-        deleted: false ,
-        value: '',
-    },
- })
- const reducer = (state, action) => {
-    //  console.log(action.payload + ' payload' + state)
-    if (reducerObject(state)[action.type]) {
-        return reducerObject(state, action.payload)[action.type];
-    } else {
-        return state;
-    }
- }
+const reducer = (state, action) => {
+  if (reducerObject(state)[action.type]) {
+    return reducerObject(state, action.payload)[action.type];
+  } else {
+    return state;
+  }
+};
 
-export {UseReducer};
+export { UseReducer };
